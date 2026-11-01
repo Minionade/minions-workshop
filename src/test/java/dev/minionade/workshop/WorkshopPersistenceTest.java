@@ -103,6 +103,7 @@ class WorkshopPersistenceTest {
     @Test
     void malformedSavedCountersAreBoundedAndNonfiniteExperienceIsRejected() {
         CompoundTag tag = table().saveWithFullMetadata(CraftingAndTransferTest.registries);
+        tag.remove("PowerUnits");
         tag.putInt("Fuel", WorkshopRules.MAX_FUEL + 1);
         tag.putIntArray("Progress", new int[] {-100, 400, 999, 30, 20, Integer.MAX_VALUE, 3, 7});
         tag.putIntArray("Charges", new int[] {-1, 99, 32, 4, 6, 30, 31, 0});

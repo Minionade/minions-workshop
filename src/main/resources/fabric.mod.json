@@ -21,6 +21,7 @@
   "depends": {
     "fabricloader": ">=${fabric_loader}",
     "fabric-api": "*",
+    "team_reborn_energy": "*",
     "minecraft": "${minecraft_version}",
     "java": ">=${java_version}"
   }

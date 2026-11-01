@@ -35,3 +35,35 @@ tasks.named('processResources') {
 tasks.named('createMinecraftArtifacts') {
     dependsOn 'stonecutterGenerate'
 }
+
+if (sc.current.version == '1.21.1') {
+    configurations.create('industrialEnergyApi')
+    repositories {
+        maven {
+            url = 'https://modmaven.dev'
+            content {
+                includeModule 'aztech', 'Modern-Industrialization'
+                includeModule 'dev.technici4n', 'GrandPower'
+            }
+        }
+        ivy {
+            url = 'https://github.com/2132937983/Singularity-Iteration/releases/download'
+            patternLayout {
+                artifact '[revision]-beta-release/SI.SingularityIteration-[revision]-beta.[ext]'
+            }
+            metadataSources { artifact() }
+            content { includeModule 'com.miophas.singularity_iteration', 'singularity-iteration' }
+        }
+    }
+    dependencies {
+        industrialEnergyApi('aztech:Modern-Industrialization:2.5.11') { transitive = false }
+        industrialEnergyApi('dev.technici4n:GrandPower:3.0.0') { transitive = false }
+        industrialEnergyApi('com.miophas.singularity_iteration:singularity-iteration:0.1.10.29') { transitive = false }
+    }
+    tasks.withType(Test).configureEach {
+        inputs.files configurations.industrialEnergyApi
+        doFirst {
+            systemProperty 'workshop.industrialApiJars', configurations.industrialEnergyApi.asPath
+        }
+    }
+}

@@ -3,6 +3,7 @@ package dev.minionade.workshop;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -13,6 +14,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public final class WorkshopMenu extends AbstractContainerMenu {
@@ -90,6 +92,8 @@ public final class WorkshopMenu extends AbstractContainerMenu {
     private int direction;
     private int flags;
     private int fuel;
+    private int energy;
+    private int lava;
     private int front = Direction.NORTH.ordinal();
     private boolean filterFuel;
     private boolean sidePanelReady = true;
@@ -190,6 +194,9 @@ public final class WorkshopMenu extends AbstractContainerMenu {
             sync(() -> table == null ? outputModes[index] : table.rule(group, side, 1).filter(index).mode().ordinal(),
                 value -> outputModes[index] = value);
         }
+        sync(() -> energy() & 0xFFFF, value -> energy = energy & 0xFFFF0000 | value & 0xFFFF);
+        sync(() -> energy() >>> 16, value -> energy = energy & 0xFFFF | (value & 0xFFFF) << 16);
+        sync(this::lava, value -> lava = value);
     }
 
     private Slot filterSlot(int index) {
@@ -308,6 +315,14 @@ public final class WorkshopMenu extends AbstractContainerMenu {
         return table == null ? fuel : table.fuel();
     }
 
+    public int energy() {
+        return table == null ? energy : table.power().energy();
+    }
+
+    public int lava() {
+        return table == null ? lava : table.power().lava() / WorkshopPower.FLUID_PER_MILLIBUCKET;
+    }
+
     public int progress(int unit) {
         return table == null ? progress[unit] : table.progress(unit);
     }
@@ -412,6 +427,10 @@ public final class WorkshopMenu extends AbstractContainerMenu {
             if (page == 4) {
                 direction = 0;
             }
+        } else if (button == 9) {
+            if (!exchangeLavaBucket(player)) {
+                return false;
+            }
         } else if (filterPage && button == 6) {
             filterFuel = !filterFuel;
             updateGroup();
@@ -468,7 +487,51 @@ public final class WorkshopMenu extends AbstractContainerMenu {
             return false;
         }
         table.setChanged();
+        if (transferPage && group == 4 && button >= 20) {
+            table.resourceConfigurationChanged();
+        }
         broadcastChanges();
+        return true;
+    }
+
+    private boolean exchangeLavaBucket(Player player) {
+        String error = null;
+        ItemStack carried = getCarried();
+        boolean filling = carried.is(Items.LAVA_BUCKET);
+        if (upgrades(4, Upgrade.FLUID) == 0) {
+            error = "lava.locked";
+        } else if (!filling && !carried.is(Items.BUCKET)) {
+            error = "lava.help";
+        } else if (filling && table.power().insertLava(WorkshopPower.FLUID_PER_BUCKET, true) < WorkshopPower.FLUID_PER_BUCKET) {
+            error = "lava.full";
+        } else if (!filling && table.power().lava() < WorkshopPower.FLUID_PER_BUCKET) {
+            error = "lava.empty";
+        }
+        ItemStack result = new ItemStack(filling ? Items.BUCKET : Items.LAVA_BUCKET);
+        if (error == null && carried.getCount() > 1 && !fitsPlayerInventory(result)) {
+            error = "lava.inventory_full";
+        }
+        if (error != null) {
+            //? if >=26.1 {
+            /*player.sendSystemMessage(Component.translatable("gui.minions_workshop." + error));
+            *///? } else {
+            player.displayClientMessage(Component.translatable("gui.minions_workshop." + error), true);
+            //? }
+            return false;
+        }
+        if (carried.getCount() == 1) {
+            setCarried(result);
+        } else {
+            if (!moveItemStackTo(result, playerStart, playerEnd, true)) {
+                throw new IllegalStateException("Workshop bucket exchange lost its reserved inventory space");
+            }
+            carried.shrink(1);
+        }
+        if (filling) {
+            table.power().insertLava(WorkshopPower.FLUID_PER_BUCKET, false);
+        } else {
+            table.power().extractLava(WorkshopPower.FLUID_PER_BUCKET, false);
+        }
         return true;
     }
 

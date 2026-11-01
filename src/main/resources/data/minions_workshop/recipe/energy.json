@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:redstone_block"}, {"item": "minecraft:copper_ingot"}],
+  "result": {"id": "minions_workshop:energy", "count": 1}
+}
