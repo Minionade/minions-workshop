@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -37,6 +38,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
+//? if fabric {
+import dev.minionade.workshop.fabric.WorkshopFabricResources;
+//? } else {
+/*import dev.minionade.workshop.neoforge.WorkshopNeoForgeResources;
+*///? }
 //? if >=26.1 {
 /*import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -58,7 +64,12 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
     private final int[] progress = new int[8];
     private final int[] charges = new int[8];
     private final float[] experience = new float[4];
-    private int fuel;
+    private final WorkshopPower power = new WorkshopPower();
+    //? if fabric {
+    public final WorkshopFabricResources resourceHandlers = new WorkshopFabricResources(this);
+    //? } else {
+    /*public final WorkshopNeoForgeResources resourceHandlers = new WorkshopNeoForgeResources(this);
+    *///? }
     private int ticks;
 
     public WorkshopBlockEntity(BlockPos pos, BlockState state) {
@@ -90,7 +101,34 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
     }
 
     public int fuel() {
-        return fuel;
+        return power.fuel();
+    }
+
+    public WorkshopPower power() {
+        return power;
+    }
+
+    public boolean canReceiveEnergy(Direction side) {
+        return side != null && !isRemoved() && upgrades(4, Upgrade.ENERGY) > 0
+            && rule(4, side.ordinal(), 0).has(TransferRule.ENABLED);
+    }
+
+    public boolean canTransferLava(Direction side, int flow) {
+        if (flow < 0 || flow > 1) {
+            throw new IllegalArgumentException("Invalid fluid transfer direction: " + flow);
+        }
+        return side != null && !isRemoved() && upgrades(4, Upgrade.FLUID) > 0
+            && rule(4, side.ordinal(), flow).has(TransferRule.ENABLED);
+    }
+
+    public void resourceConfigurationChanged() {
+        if (level instanceof ServerLevel server) {
+            //? if neoforge {
+            /*server.invalidateCapabilities(worldPosition);
+            *///? }
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            server.updateNeighborsAt(worldPosition, getBlockState().getBlock());
+        }
     }
 
     private int machine(int unit) {
@@ -111,6 +149,9 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
 
     private void tick(ServerLevel server) {
         boolean changed = refillFuel(server);
+        if (upgrades(4, Upgrade.FLUID) > 0) {
+            changed |= power.burnLava();
+        }
         boolean working = false;
         for (int unit = 0; unit < WorkshopLayout.UNIT_COUNT; unit++) {
             if (module(unit) == Module.SMELTING) {
@@ -170,10 +211,23 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
 
     private boolean refillFuel(ServerLevel server) {
         ItemStack stack = getItem(WorkshopLayout.FUEL);
+        if (stack.is(Items.LAVA_BUCKET) && upgrades(4, Upgrade.FLUID) > 0) {
+            if (power.insertLava(WorkshopPower.FLUID_PER_BUCKET, true) < WorkshopPower.FLUID_PER_BUCKET) {
+                return false;
+            }
+            power.insertLava(WorkshopPower.FLUID_PER_BUCKET, false);
+            consumeFuelItem(server, stack);
+            return true;
+        }
         int duration = burnTime(stack);
-        if (duration <= 0 || duration > WorkshopRules.MAX_FUEL - fuel) {
+        if (duration <= 0 || !power.addFuel(duration)) {
             return false;
         }
+        consumeFuelItem(server, stack);
+        return true;
+    }
+
+    private void consumeFuelItem(ServerLevel server, ItemStack stack) {
         ItemStack remainder = remainder(stack);
         removeItem(WorkshopLayout.FUEL, 1);
         if (!remainder.isEmpty()) {
@@ -183,8 +237,6 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
                 Containers.dropItemStack(server, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), remainder);
             }
         }
-        fuel += duration;
-        return true;
     }
 
     private static ItemStack remainder(ItemStack stack) {
@@ -277,10 +329,9 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
             return changed;
         }
         int consumption = WorkshopRules.consumption(speed, charging, smelting);
-        if (fuel < consumption) {
+        if (!power.consumeFuel(consumption)) {
             return changed;
         }
-        fuel -= consumption;
         progress[machine] += WorkshopRules.speed(speed, charging);
         if (progress[machine] >= WorkshopRules.PRODUCTION_TIME) {
             progress[machine] -= WorkshopRules.PRODUCTION_TIME;
@@ -604,19 +655,29 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
         ItemStack removed = ContainerHelper.removeItem(items, slot, count);
         if (!removed.isEmpty()) {
             setChanged();
+            if (slot >= WorkshopLayout.GLOBAL) {
+                resourceConfigurationChanged();
+            }
         }
         return removed;
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(items, slot);
+        ItemStack removed = ContainerHelper.takeItem(items, slot);
+        if (slot >= WorkshopLayout.GLOBAL && !removed.isEmpty()) {
+            resourceConfigurationChanged();
+        }
+        return removed;
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
         items.set(slot, stack);
         setChanged();
+        if (slot >= WorkshopLayout.GLOBAL) {
+            resourceConfigurationChanged();
+        }
     }
 
     @Override
@@ -628,6 +689,7 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
     public void clearContent() {
         items.clear();
         setChanged();
+        resourceConfigurationChanged();
     }
 
     @Override
@@ -662,7 +724,9 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
-        output.putInt("Fuel", fuel);
+        output.putInt("Fuel", fuel());
+        output.putInt("PowerUnits", power.snapshot().amount());
+        output.putInt("Lava", power.lava());
         output.putIntArray("Progress", progress.clone());
         output.putIntArray("Charges", charges.clone());
         output.store("TransferRules", RULES_CODEC, Arrays.asList(rules));
@@ -676,7 +740,8 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
         super.loadAdditional(input);
         items.clear();
         ContainerHelper.loadAllItems(input, items);
-        fuel = Math.clamp(input.getIntOr("Fuel", 0), 0, WorkshopRules.MAX_FUEL);
+        restorePower(input.getIntOr("PowerUnits", Math.clamp(input.getIntOr("Fuel", 0), 0, WorkshopRules.MAX_FUEL)
+            * WorkshopPower.UNITS_PER_FUEL), input.getIntOr("Lava", 0));
         restoreArray(progress, input.getIntArray("Progress").orElse(new int[0]), WorkshopRules.PRODUCTION_TIME - 1);
         restoreArray(charges, input.getIntArray("Charges").orElse(new int[0]), WorkshopRules.maxCharges(8));
         restoreRules(input.read("TransferRules", RULES_CODEC).orElse(List.of()));
@@ -689,7 +754,9 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
-        tag.putInt("Fuel", fuel);
+        tag.putInt("Fuel", fuel());
+        tag.putInt("PowerUnits", power.snapshot().amount());
+        tag.putInt("Lava", power.lava());
         tag.putIntArray("Progress", progress.clone());
         tag.putIntArray("Charges", charges.clone());
         tag.put("TransferRules", RULES_CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, registries), Arrays.asList(rules)).getOrThrow());
@@ -703,7 +770,8 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
         super.loadAdditional(tag, registries);
         items.clear();
         ContainerHelper.loadAllItems(tag, items, registries);
-        fuel = Math.clamp(tag.getInt("Fuel"), 0, WorkshopRules.MAX_FUEL);
+        restorePower(tag.contains("PowerUnits") ? tag.getInt("PowerUnits")
+            : Math.clamp(tag.getInt("Fuel"), 0, WorkshopRules.MAX_FUEL) * WorkshopPower.UNITS_PER_FUEL, tag.getInt("Lava"));
         restoreArray(progress, tag.getIntArray("Progress"), WorkshopRules.PRODUCTION_TIME - 1);
         restoreArray(charges, tag.getIntArray("Charges"), WorkshopRules.maxCharges(8));
         restoreRules(tag.contains("TransferRules")
@@ -722,6 +790,14 @@ public final class WorkshopBlockEntity extends BlockEntity implements WorldlyCon
             destination[index] = Math.clamp(source[index], 0, maximum);
         }
         Arrays.fill(destination, count, destination.length, 0);
+    }
+
+    private void restorePower(int amount, int lava) {
+        if (amount < 0 || amount > WorkshopPower.POWER_CAPACITY || lava < 0 || lava > WorkshopPower.LAVA_CAPACITY) {
+            Workshop.LOGGER.warn("Invalid saved workshop power at {}: power={}, lava={}", worldPosition, amount, lava);
+        }
+        power.restore(new WorkshopPower.State(Math.clamp(amount, 0, WorkshopPower.POWER_CAPACITY),
+            Math.clamp(lava, 0, WorkshopPower.LAVA_CAPACITY)));
     }
 
     private void restoreRules(List<TransferRule> saved) {

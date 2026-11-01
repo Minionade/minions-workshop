@@ -13,9 +13,11 @@ dependencies {
         mappings loom.officialMojangMappings()
         modImplementation "net.fabricmc:fabric-loader:${property('fabric_loader')}"
         modImplementation "net.fabricmc.fabric-api:fabric-api:${property('fabric_api')}"
+        include modImplementation('teamreborn:energy:4.1.0')
     } else {
         implementation "net.fabricmc:fabric-loader:${property('fabric_loader')}"
         implementation "net.fabricmc.fabric-api:fabric-api:${property('fabric_api')}"
+        include implementation('teamreborn:energy:5.0.0')
     }
 }
 

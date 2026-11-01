@@ -12,7 +12,9 @@ public enum Upgrade {
     QUEUE(3, Module.SMELTING),
     AUTO_TRANSFER(1),
     FILTER(1),
-    TRANSFER(6);
+    TRANSFER(6),
+    ENERGY(1),
+    FLUID(1);
 
     private final int maximum;
     private final Module[] parents;
@@ -31,7 +33,7 @@ public enum Upgrade {
     }
 
     public boolean global() {
-        return this == AUTO_TRANSFER || this == FILTER || this == TRANSFER;
+        return this == AUTO_TRANSFER || this == FILTER || this == TRANSFER || this == ENERGY || this == FLUID;
     }
 
     public boolean supports(Module module) {

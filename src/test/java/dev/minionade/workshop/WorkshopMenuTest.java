@@ -169,6 +169,24 @@ class WorkshopMenuTest {
     }
 
     @Test
+    void appendedResourceDataPreservesUnsignedEnergyAndTheOldInventoryProtocol() {
+        WorkshopMenu menu = menu();
+        menu.setData(5, 8000);
+        menu.setData(43, (short) 64_000);
+        menu.setData(44, 0);
+        menu.setData(45, 8000);
+        assertEquals(8000, menu.fuel());
+        assertEquals(64_000, menu.energy());
+        assertEquals(8000, menu.lava());
+        assertEquals(281, menu.slots.size());
+        for (int index = 235; index < 271; index++) {
+            assertTrue(menu.slots.get(index).isActive());
+        }
+        menu.setData(43, 1);
+        assertEquals(1, menu.energy());
+    }
+
+    @Test
     void fuelTransferContextDoesNotHijackTheSelectedMainTab() {
         WorkshopMenu menu = menu();
         menu.slots.get(WorkshopLayout.parent(3)).set(new ItemStack(Items.CHEST));

@@ -74,10 +74,19 @@ public final class WorkshopNeoForge {
         //? if <26.1 {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, Workshop.TABLE_ENTITY,
             (table, side) -> side == null ? null : new SidedInvWrapper(table, side));
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, Workshop.TABLE_ENTITY,
+            (table, side) -> table.resourceHandlers.energy(side));
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, Workshop.TABLE_ENTITY,
+            (table, side) -> table.resourceHandlers.fluid(side));
         //? } else {
         event.registerBlockEntity(Capabilities.Item.BLOCK, Workshop.TABLE_ENTITY,
             (table, side) -> side == null ? null : new WorldlyContainerWrapper(table, side));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, Workshop.TABLE_ENTITY,
+            (table, side) -> table.resourceHandlers.energy(side));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, Workshop.TABLE_ENTITY,
+            (table, side) -> table.resourceHandlers.fluid(side));
         //? }
+        WorkshopIndustrialEnergy.register(event);
     }
 }
 *///? }

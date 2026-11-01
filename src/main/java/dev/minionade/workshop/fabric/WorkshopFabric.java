@@ -11,12 +11,14 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTabs;
+import team.reborn.energy.api.EnergyStorage;
 
 public final class WorkshopFabric implements ModInitializer {
     @Override
@@ -34,6 +36,8 @@ public final class WorkshopFabric implements ModInitializer {
         // Block the generic container fallback for unsided requests.
         ItemStorage.SIDED.registerForBlockEntity((table, direction) ->
             direction == null ? Storage.empty() : InventoryStorage.of(table, direction), Workshop.TABLE_ENTITY);
+        EnergyStorage.SIDED.registerForBlockEntity((table, side) -> table.resourceHandlers.energy(side), Workshop.TABLE_ENTITY);
+        FluidStorage.SIDED.registerForBlockEntity((table, side) -> table.resourceHandlers.fluid(side), Workshop.TABLE_ENTITY);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register(entries -> {
             entries.accept(Workshop.TABLE);
             Workshop.UPGRADES.values().forEach(entries::accept);

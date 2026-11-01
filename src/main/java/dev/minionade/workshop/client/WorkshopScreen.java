@@ -9,6 +9,7 @@ import dev.minionade.workshop.WorkshopLayout;
 import dev.minionade.workshop.WorkshopMenu;
 import dev.minionade.workshop.WorkshopMenu.Face;
 import dev.minionade.workshop.WorkshopMenu.FaceMode;
+import dev.minionade.workshop.WorkshopPower;
 import dev.minionade.workshop.WorkshopRules;
 import dev.minionade.workshop.WorkshopSidebar;
 import java.util.ArrayList;
@@ -80,6 +81,7 @@ public final class WorkshopScreen extends AbstractContainerScreen<WorkshopMenu> 
         for (int page : new int[] {2, 1, 4, 3}) {
             buttons.put(page, addRenderableWidget(new IconTab(page)));
         }
+        add(9, new LavaButton(), 29, 127);
         for (Face face : Face.values()) {
             add(20 + face.ordinal(), new FaceButton(face), 8 + face.column * 20, 28 + face.row * 20);
         }
@@ -148,6 +150,15 @@ public final class WorkshopScreen extends AbstractContainerScreen<WorkshopMenu> 
                 return;
             }
             Position position = positions.get(id);
+            if (id == 9) {
+                button.setPosition(leftPos + position.x(), topPos + position.y());
+                button.visible = menu.upgrades(4, Upgrade.FLUID) > 0;
+                button.active = button.visible;
+                button.setTooltip(Tooltip.create(Component.translatable("gui.minions_workshop.lava.amount", menu.lava(),
+                    WorkshopPower.LAVA_CAPACITY / WorkshopPower.FLUID_PER_MILLIBUCKET)
+                    .append("\n").append(text("lava.help"))));
+                return;
+            }
             boolean station = id >= 70 && id < 74;
             boolean filterControl = id == 6 || id == 7 || id == 42 || id == 47 || button instanceof GhostButton;
             WorkshopSidebar.Bounds bounds = pane(filterControl ? 4 : menu.page() == 3 ? 3 : 1);
@@ -369,14 +380,16 @@ public final class WorkshopScreen extends AbstractContainerScreen<WorkshopMenu> 
     }
 
     private void drawFuel(GuiGraphics graphics) {
-        texture(graphics, FURNACE, leftPos + 31, topPos + 129, 56, 36, 14, 14);
-        if (menu.fuel() > 0) {
-            sprite(graphics, FLAME, leftPos + 31, topPos + 129, 14, 14);
+        if (menu.upgrades(4, Upgrade.FLUID) == 0) {
+            texture(graphics, FURNACE, leftPos + 31, topPos + 129, 56, 36, 14, 14);
+            if (menu.fuel() > 0) {
+                sprite(graphics, FLAME, leftPos + 31, topPos + 129, 14, 14);
+            }
         }
-        label(graphics, "fuel.shared", 49, 128);
+        label(graphics, "power.shared", 49, 128);
         graphics.fill(leftPos + 48, topPos + 138, leftPos + 168, topPos + 145, SHADOW);
         graphics.fill(leftPos + 49, topPos + 139, leftPos + 167, topPos + 144, 0xFF8B8B8B);
-        int filled = menu.fuel() * 118 / WorkshopRules.MAX_FUEL;
+        int filled = menu.energy() * 118 / (WorkshopRules.MAX_FUEL * WorkshopPower.ENERGY_PER_FUEL);
         graphics.fill(leftPos + 49, topPos + 139, leftPos + 49 + filled, topPos + 144, 0xFFF3AD3B);
         graphics.fill(leftPos + 49, topPos + 144, leftPos + 168, topPos + 145, 0xFFFFFFFF);
     }
@@ -390,10 +403,18 @@ public final class WorkshopScreen extends AbstractContainerScreen<WorkshopMenu> 
                 return;
             }
         }
-        if (inside(mouseX, mouseY, 31, 128, 137, 18)) {
-            tooltip(graphics, List.of(text("fuel.shared"),
-                Component.translatable("gui.minions_workshop.fuel.amount", menu.fuel(), WorkshopRules.MAX_FUEL),
-                text("fuel.help")), mouseX, mouseY);
+        int powerX = menu.upgrades(4, Upgrade.FLUID) > 0 ? 49 : 31;
+        if (inside(mouseX, mouseY, powerX, 128, 168 - powerX, 18)) {
+            List<Component> lines = new ArrayList<>();
+            lines.add(text("power.shared"));
+            lines.add(Component.translatable("gui.minions_workshop.fuel.amount", menu.fuel(), WorkshopRules.MAX_FUEL));
+            if (menu.upgrades(4, Upgrade.ENERGY) > 0) {
+                lines.add(Component.translatable("gui.minions_workshop.energy.amount", menu.energy(),
+                    WorkshopRules.MAX_FUEL * WorkshopPower.ENERGY_PER_FUEL));
+                lines.add(Component.translatable("gui.minions_workshop.energy.conversion", WorkshopPower.ENERGY_PER_FUEL));
+            }
+            lines.add(text("fuel.help"));
+            tooltip(graphics, lines, mouseX, mouseY);
         }
         if (menu.page() == 2 && sidebar.fullyOpen(2)) {
             WorkshopSidebar.Bounds bounds = pane(2);
@@ -470,6 +491,35 @@ public final class WorkshopScreen extends AbstractContainerScreen<WorkshopMenu> 
             case OUTPUT -> 0xFFE08A1E;
             case BOTH -> 0xFF8E44AD;
         };
+    }
+
+    private final class LavaButton extends Button {
+        LavaButton() {
+            super(0, 0, 18, 18, text("lava"), ignored -> send(9), DEFAULT_NARRATION);
+        }
+
+        //? if >=26.1 {
+        /*@Override
+        protected void extractContents(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+            draw(graphics);
+        }
+        *///? } else {
+        @Override
+        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+            draw(graphics);
+        }
+        //? }
+
+        private void draw(GuiGraphics graphics) {
+            slotWell(graphics, getX(), getY(), 18);
+            graphics.renderItem(new ItemStack(Items.LAVA_BUCKET), getX() + 1, getY() + 1);
+            int height = menu.lava() * 14 / (WorkshopPower.LAVA_CAPACITY / WorkshopPower.FLUID_PER_MILLIBUCKET);
+            graphics.fill(getX() + 15, getY() + 2, getX() + 17, getY() + 16, 0xFF373737);
+            graphics.fill(getX() + 15, getY() + 16 - height, getX() + 17, getY() + 16, 0xFFFF7B25);
+            if (isHoveredOrFocused()) {
+                graphics.fill(getX() + 1, getY() + 1, getX() + 17, getY() + 17, 0x28FFFFFF);
+            }
+        }
     }
 
     private final class IconTab extends Button {

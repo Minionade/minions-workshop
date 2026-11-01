@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:bucket"}, {"item": "minecraft:iron_ingot"}],
+  "result": {"id": "minions_workshop:fluid", "count": 1}
+}
