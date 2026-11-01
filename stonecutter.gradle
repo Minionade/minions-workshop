@@ -9,6 +9,7 @@ stonecutter.parameters {
     replacements.string(current.parsed.matches('>=26.1')) {
         replace 'ResourceLocation', 'Identifier'
         replace 'GuiGraphics', 'GuiGraphicsExtractor'
+        replace 'ClickType', 'ContainerInput'
         replace 'graphics.drawString(', 'graphics.text('
         replace 'graphics.renderItem(', 'graphics.item('
         replace 'net.fabricmc.fabric.api.itemgroup.v1', 'net.fabricmc.fabric.api.creativetab.v1'

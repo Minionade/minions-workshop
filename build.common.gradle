@@ -7,6 +7,11 @@ base.archivesName = property('mod_id')
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+        content { includeGroup 'mezz.jei' }
+    }
 }
 
 java {
@@ -19,6 +24,12 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
+    def jeiVersion = [
+        '1.21.1': '19.70.0.469',
+        '26.1.2': '29.53.0.115',
+        '26.3': '31.17.0.108'
+    ][sc.current.version]
+    compileOnly "mezz.jei:jei-${sc.current.version}-common-api:${jeiVersion}"
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
