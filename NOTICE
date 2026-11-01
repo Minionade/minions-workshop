@@ -1,0 +1,13 @@
+Minion's Workshop is a modern, multi-loader port of Engineer's Workshop Reborn.
+
+Upstream project: https://github.com/TechReborn/EngineersWorkshopReborn
+Reference revision: b167f697795cb36e2bcbf651ff2029c2da1d585a
+Upstream authors: Modmuss50, EwyBoy, JorVa and Vswe.
+Original concept: Steve's Workshop by Vswe.
+
+Workshop and upgrade textures originate from Engineer's Workshop Reborn.
+The project owner identified the upstream project's MIT license at:
+https://www.curseforge.com/minecraft/mc-mods/engineers-workshop-reborn
+
+Gradle wrapper scripts and binaries are distributed under the Apache License 2.0:
+https://www.apache.org/licenses/LICENSE-2.0

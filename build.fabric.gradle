@@ -1,0 +1,37 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version '1.19.3' apply false
+    id 'net.fabricmc.fabric-loom' version '1.19.3' apply false
+}
+
+def modern = sc.current.version.startsWith('26.')
+apply plugin: modern ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
+apply from: rootProject.file('build.common.gradle')
+
+dependencies {
+    minecraft "com.mojang:minecraft:${sc.current.version}"
+    if (!modern) {
+        mappings loom.officialMojangMappings()
+        modImplementation "net.fabricmc:fabric-loader:${property('fabric_loader')}"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${property('fabric_api')}"
+    } else {
+        implementation "net.fabricmc:fabric-loader:${property('fabric_loader')}"
+        implementation "net.fabricmc.fabric-api:fabric-api:${property('fabric_api')}"
+    }
+}
+
+loom {
+    runs {
+        client {
+            client()
+            runDir 'run/client'
+        }
+        server {
+            server()
+            runDir 'run/server'
+        }
+    }
+}
+
+tasks.named('processResources') {
+    exclude 'META-INF/neoforge.mods.toml'
+}

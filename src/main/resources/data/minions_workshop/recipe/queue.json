@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:hopper"}],
+  "result": {"id": "minions_workshop:queue", "count": 1}
+}

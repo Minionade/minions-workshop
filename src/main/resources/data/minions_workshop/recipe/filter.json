@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:paper"}, {"item": "minecraft:redstone"}],
+  "result": {"id": "minions_workshop:filter", "count": 1}
+}

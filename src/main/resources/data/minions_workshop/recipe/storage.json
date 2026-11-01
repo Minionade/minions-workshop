@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:chest"}],
+  "result": {"id": "minions_workshop:storage", "count": 1}
+}

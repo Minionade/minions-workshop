@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:sugar"}, {"item": "minecraft:redstone"}],
+  "result": {"id": "minions_workshop:speed", "count": 1}
+}

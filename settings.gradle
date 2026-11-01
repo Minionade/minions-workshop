@@ -1,0 +1,26 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.neoforged.net/releases/' }
+        maven { url = 'https://maven.kikugie.dev/releases/' }
+    }
+}
+
+plugins {
+    id 'dev.kikugie.stonecutter' version '0.9.8'
+}
+
+rootProject.name = 'minions-workshop'
+
+stonecutter {
+    kotlinController = false
+    create(getRootProject()) {
+        ['1.21.1', '26.1.2', '26.3'].each { minecraft ->
+            ['fabric', 'neoforge'].each { loader ->
+                version("${minecraft}-${loader}", minecraft).buildscript = "build.${loader}.gradle"
+            }
+        }
+        vcsVersion = '1.21.1-fabric'
+    }
+}

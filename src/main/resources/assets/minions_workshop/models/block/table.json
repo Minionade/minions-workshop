@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "minions_workshop:block/front0",
+    "down": "minions_workshop:block/bot",
+    "up": "minions_workshop:block/top",
+    "north": "minions_workshop:block/front0",
+    "south": "minions_workshop:block/back",
+    "west": "minions_workshop:block/left",
+    "east": "minions_workshop:block/right"
+  }
+}
