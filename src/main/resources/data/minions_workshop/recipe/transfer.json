@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "minions_workshop:blank"}, {"item": "minecraft:piston"}, {"item": "minecraft:redstone"}],
+  "result": {"id": "minions_workshop:transfer", "count": 1}
+}

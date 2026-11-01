@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": {"model": "minions_workshop:block/table"},
+    "facing=east": {"model": "minions_workshop:block/table", "y": 90},
+    "facing=south": {"model": "minions_workshop:block/table", "y": 180},
+    "facing=west": {"model": "minions_workshop:block/table", "y": 270}
+  }
+}

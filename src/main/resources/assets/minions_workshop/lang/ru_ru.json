@@ -1,0 +1,21 @@
+{
+  "block.minions_workshop.table": "Мастерской стол",
+  "item.minions_workshop.blank": "Чистое обновление",
+  "item.minions_workshop.auto_crafter": "Обновление: Автокрафтер",
+  "item.minions_workshop.storage": "Обновление: Хранение",
+  "item.minions_workshop.charged": "Обновление: Заряд",
+  "item.minions_workshop.speed": "Обновление: Скорость",
+  "item.minions_workshop.queue": "Обновление: Очерёдность",
+  "item.minions_workshop.auto_transfer": "Обновление: Автопередача",
+  "item.minions_workshop.filter": "Обновление: Фильтр",
+  "item.minions_workshop.transfer": "Обновление: Ёмкость передачи",
+  "item.minions_workshop.blank.description": "Компонент крафта",
+  "item.minions_workshop.auto_crafter.description": "Конвертирует верстак в автоверстак",
+  "item.minions_workshop.storage.description": "Добавляет дополнительное место для хранения",
+  "item.minions_workshop.charged.description": "Позволяет простаивающим компонентам заряжаться для последующего использования",
+  "item.minions_workshop.speed.description": "Увеличивает скорость производства",
+  "item.minions_workshop.queue.description": "Добавляет очередь на вход",
+  "item.minions_workshop.auto_transfer.description": "Включает автопередачу в и из стола",
+  "item.minions_workshop.filter.description": "Включает фильтр передачи",
+  "item.minions_workshop.transfer.description": "Увеличивает ёмкость автопередачи"
+}

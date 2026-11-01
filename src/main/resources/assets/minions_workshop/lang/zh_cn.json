@@ -1,0 +1,21 @@
+{
+  "block.minions_workshop.table": "工作台",
+  "item.minions_workshop.blank": "空白升级",
+  "item.minions_workshop.auto_crafter": "自动合成升级",
+  "item.minions_workshop.storage": "存储升级",
+  "item.minions_workshop.charged": "能量升级",
+  "item.minions_workshop.speed": "速度升级",
+  "item.minions_workshop.queue": "候选升级",
+  "item.minions_workshop.auto_transfer": "自动输出升级",
+  "item.minions_workshop.filter": "过滤器升级",
+  "item.minions_workshop.transfer": "传输容量升级",
+  "item.minions_workshop.blank.description": "用于制作其他组件",
+  "item.minions_workshop.auto_crafter.description": "能够自动进行合成",
+  "item.minions_workshop.storage.description": "添加额外的存储空间",
+  "item.minions_workshop.charged.description": "让闲置组件充电以供稍后使用",
+  "item.minions_workshop.speed.description": "提高生产速度",
+  "item.minions_workshop.queue.description": "添加输入候选",
+  "item.minions_workshop.auto_transfer.description": "使工作台能够自动输出",
+  "item.minions_workshop.filter.description": "为输出时添加过滤器",
+  "item.minions_workshop.transfer.description": "提高自动传输能力"
+}

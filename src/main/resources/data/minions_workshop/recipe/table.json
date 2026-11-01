@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["ICI", "PPP", "PPP"],
+  "key": {
+    "I": {"item": "minecraft:iron_ingot"},
+    "C": {"item": "minecraft:crafting_table"},
+    "P": {"tag": "minecraft:planks"}
+  },
+  "result": {"id": "minions_workshop:table", "count": 1}
+}

@@ -1,0 +1,117 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+version = "${property('mod_version')}+${sc.current.version}-${sc.current.project.split('-').last()}"
+group = property('mod_group')
+base.archivesName = property('mod_id')
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(sc.current.version.startsWith('26.') ? 25 : 21)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
+def metadata = [
+    mod_id: property('mod_id'),
+    mod_name: property('mod_name'),
+    mod_version: property('mod_version'),
+    minecraft_version: sc.current.version,
+    java_version: sc.current.version.startsWith('26.') ? '25' : '21',
+    fabric_loader: property('fabric_loader'),
+    neoforge_version: findProperty('neoforge_version') ?: '0'
+]
+
+tasks.named('processResources') {
+    inputs.properties metadata
+    filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
+        expand metadata
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file('LICENSE'))
+    from(rootProject.file('NOTICE'))
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def minecraftVersion = sc.current.version
+tasks.named('processResources') {
+    doLast {
+        def writeJson = { File target, Object value ->
+            target.parentFile.mkdirs()
+            target.setText(JsonOutput.prettyPrint(JsonOutput.toJson(value)) + '\n', 'UTF-8')
+        }
+        def parser = new JsonSlurper()
+        def resourceRoot = destinationDir
+        def modern = minecraftVersion.startsWith('26.')
+        def recipeDirectory = new File(resourceRoot, 'data/minions_workshop/recipe')
+        recipeDirectory.listFiles().findAll { it.name.endsWith('.json') }.sort { it.name }.each { recipeFile ->
+            def recipe = parser.parse(recipeFile, 'UTF-8')
+            if (modern) {
+                def ingredient = { value -> value.item ?: "#${value.tag}" }
+                if (recipe.key) {
+                    recipe.key = recipe.key.collectEntries { key, value -> [(key): ingredient(value)] }
+                }
+                if (recipe.ingredients) {
+                    recipe.ingredients = recipe.ingredients.collect(ingredient)
+                }
+                if (minecraftVersion == '26.3') {
+                    recipe.remove('category')
+                }
+                writeJson(recipeFile, recipe)
+            }
+            def name = recipeFile.name.substring(0, recipeFile.name.length() - 5)
+            def requiredItem = name == 'table' ? 'minecraft:crafting_table'
+                : name == 'blank' ? 'minecraft:redstone' : 'minions_workshop:blank'
+            writeJson(new File(resourceRoot, "data/minions_workshop/advancement/recipes/misc/${name}.json"), [
+                parent: 'minecraft:recipes/root',
+                criteria: [
+                    has_item: [trigger: 'minecraft:inventory_changed', conditions: [items: [[items: [requiredItem]]]]],
+                    has_the_recipe: [
+                        trigger: 'minecraft:recipe_unlocked',
+                        conditions: minecraftVersion == '26.3'
+                            ? [recipes: "minions_workshop:${name}"] : [recipe: "minions_workshop:${name}"]
+                    ]
+                ],
+                requirements: [['has_item', 'has_the_recipe']],
+                rewards: [recipes: ["minions_workshop:${name}"]]
+            ])
+        }
+        if (modern) {
+            def formats = [
+                '26.1.2': [minimum: [84, 0], maximum: [101, 1]],
+                '26.3': [minimum: [97, 1], maximum: [121, 0]]
+            ][minecraftVersion]
+            writeJson(new File(resourceRoot, 'pack.mcmeta'), [pack: [
+                description: "Minion's Workshop resources",
+                min_format: formats.minimum,
+                max_format: formats.maximum
+            ]])
+            new File(resourceRoot, 'assets/minions_workshop/models/item').listFiles()
+                .findAll { it.name.endsWith('.json') }.each { model ->
+                    def name = model.name.substring(0, model.name.length() - 5)
+                    writeJson(new File(resourceRoot, "assets/minions_workshop/items/${name}.json"), [
+                        model: [type: 'minecraft:model', model: "minions_workshop:item/${name}"]
+                    ])
+                }
+        }
+    }
+}

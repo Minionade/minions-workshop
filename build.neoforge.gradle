@@ -1,0 +1,37 @@
+plugins {
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+apply from: rootProject.file('build.common.gradle')
+
+neoForge {
+    version = property('neoforge_version')
+    runs {
+        client {
+            client()
+            gameDirectory = file('run/client')
+        }
+        server {
+            server()
+            gameDirectory = file('run/server')
+            programArgument '--nogui'
+        }
+    }
+    mods {
+        minions_workshop {
+            sourceSet sourceSets.main
+        }
+    }
+    unitTest {
+        enable()
+        testedMod = mods.minions_workshop
+    }
+}
+
+tasks.named('processResources') {
+    exclude 'fabric.mod.json'
+}
+
+tasks.named('createMinecraftArtifacts') {
+    dependsOn 'stonecutterGenerate'
+}

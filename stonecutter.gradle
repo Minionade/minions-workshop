@@ -1,0 +1,25 @@
+plugins {
+    id 'dev.kikugie.stonecutter'
+}
+
+stonecutter.active '1.21.1-fabric'
+
+stonecutter.parameters {
+    constants.match(current.project.substring(current.project.lastIndexOf('-') + 1), 'fabric', 'neoforge')
+    replacements.string(current.parsed.matches('>=26.1')) {
+        replace 'ResourceLocation', 'Identifier'
+        replace 'GuiGraphics', 'GuiGraphicsExtractor'
+        replace 'graphics.drawString(', 'graphics.text('
+        replace 'graphics.renderItem(', 'graphics.item('
+        replace 'net.fabricmc.fabric.api.itemgroup.v1', 'net.fabricmc.fabric.api.creativetab.v1'
+        replace 'ItemGroupEvents', 'CreativeModeTabEvents'
+        replace 'InventoryStorage', 'ContainerStorage'
+        replace '.modifyEntriesEvent(', '.modifyOutputEvent('
+    }
+}
+
+tasks.register('buildAll') {
+    group = 'build'
+    description = 'Build and check all six Minecraft and loader targets.'
+    dependsOn subprojects.collect { "${it.path}:build" }
+}

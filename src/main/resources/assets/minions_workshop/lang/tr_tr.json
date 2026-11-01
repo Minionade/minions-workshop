@@ -1,0 +1,21 @@
+{
+  "block.minions_workshop.table": "Atölye Masası",
+  "item.minions_workshop.blank": "Boş Yükseltme",
+  "item.minions_workshop.auto_crafter": "Otomatik üretim Yükseltmesi",
+  "item.minions_workshop.storage": "Depolama Yükseltmesi",
+  "item.minions_workshop.charged": "Şarj Yükseltmesi",
+  "item.minions_workshop.speed": "Hız Yükseltmesi",
+  "item.minions_workshop.queue": "Sıralama Yükseltmesi",
+  "item.minions_workshop.auto_transfer": "Otomatik Transfer Yükseltmesi",
+  "item.minions_workshop.filter": "Filtre Yükseltmesi",
+  "item.minions_workshop.transfer": "Aktarma Kapasitesi Yükseltmesi",
+  "item.minions_workshop.blank.description": "Üretim Bileşeni",
+  "item.minions_workshop.auto_crafter.description": "Üretim masasını otomatik üretim masasına çevirir.",
+  "item.minions_workshop.storage.description": "Ekstra depolama ekler.",
+  "item.minions_workshop.charged.description": "Boşta olan bileşenlerin daha sonra şarj edilmesine izin verir. ",
+  "item.minions_workshop.speed.description": "Üretim hızını artırır.",
+  "item.minions_workshop.queue.description": "Giriş sırası ekler.",
+  "item.minions_workshop.auto_transfer.description": "Masadan otomatik aktarımlara izin verir.",
+  "item.minions_workshop.filter.description": "Transfer filtrelerine izin verir.",
+  "item.minions_workshop.transfer.description": "Otomatik transfer kapasitesini artırır."
+}
