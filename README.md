@@ -3,7 +3,7 @@
 <img src="logo.png" alt="Minion's Workshop block logo" width="128" height="128">
 
 A single-branch, Stonecutter-managed port of [Engineer's Workshop Reborn](https://github.com/TechReborn/EngineersWorkshopReborn)
-for Fabric and NeoForge.
+for Fabric and NeoForge, continuing Steve's Workshop on modern Minecraft versions.
 
 | Minecraft | Fabric | NeoForge | Game Java |
 | --- | --- | --- | --- |
