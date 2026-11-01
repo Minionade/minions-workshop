@@ -1,5 +1,7 @@
 # Minion's Workshop
 
+<img src="logo.png" alt="Minion's Workshop block logo" width="128" height="128">
+
 A single-branch, Stonecutter-managed port of [Engineer's Workshop Reborn](https://github.com/TechReborn/EngineersWorkshopReborn)
 for Fabric and NeoForge.
 

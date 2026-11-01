@@ -7,6 +7,7 @@ issueTrackerURL="https://github.com/Minionade/minions-workshop/issues"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="assets/minions_workshop/icon.png"
 authors="Minionade"
 credits="Modmuss50, EwyBoy, JorVa and Vswe; port of Engineer's Workshop Reborn"
 description='''A modular workshop with four crafting, smelting or storage units.'''

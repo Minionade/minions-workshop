@@ -12,6 +12,7 @@
     "issues": "https://github.com/Minionade/minions-workshop/issues"
   },
   "license": "MIT",
+  "icon": "assets/minions_workshop/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": ["dev.minionade.workshop.fabric.WorkshopFabric"],
